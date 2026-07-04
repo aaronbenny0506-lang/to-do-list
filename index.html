@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Field Notes — To-Do List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F6F2E9;
+    --paper-line: #DCD3BE;
+    --ink: #2B2A28;
+    --ink-soft: #6B6558;
+    --stamp-red: #A63D33;
+    --stamp-red-soft: #C6564A;
+    --done: #8A8672;
+    --focus: #2F5D50;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--paper);
+    background-image:
+      repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 35px,
+        var(--paper-line) 35px,
+        var(--paper-line) 36px
+      );
+    font-family: 'Source Serif 4', serif;
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+    padding: 60px 20px 100px;
+  }
+
+  .sheet {
+    width: 100%;
+    max-width: 620px;
+  }
+
+  .letterhead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 14px;
+    margin-bottom: 8px;
+  }
+
+  .letterhead h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .letterhead .date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .tally {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin: 10px 0 28px;
+    letter-spacing: 0.03em;
+  }
+
+  .tally strong { color: var(--stamp-red); }
+
+  form.add-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 34px;
+  }
+
+  .add-row input[type="text"] {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px dashed var(--ink-soft);
+    font-family: 'Source Serif 4', serif;
+    font-size: 17px;
+    color: var(--ink);
+    padding: 8px 2px;
+    outline: none;
+  }
+
+  .add-row input[type="text"]::placeholder {
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  .add-row input[type="text"]:focus {
+    border-bottom-color: var(--focus);
+    border-bottom-style: solid;
+  }
+
+  .add-row button {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 0 20px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .add-row button:hover { background: var(--focus); }
+  .add-row button:disabled { background: var(--paper-line); color: var(--ink-soft); cursor: not-allowed; }
+
+  ul.list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  li.item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--paper-line);
+  }
+
+  .checkbox {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    margin-top: 2px;
+    border: 1.5px solid var(--ink);
+    border-radius: 3px;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .checkbox.checked {
+    background: var(--stamp-red);
+    border-color: var(--stamp-red);
+    transform: rotate(-3deg);
+  }
+
+  .checkbox svg {
+    width: 14px;
+    height: 14px;
+    stroke: var(--paper);
+    stroke-width: 3;
+    fill: none;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 0.12s ease, transform 0.12s ease;
+  }
+
+  .checkbox.checked svg { opacity: 1; transform: scale(1); }
+
+  .item-text {
+    flex: 1;
+    font-size: 17px;
+    line-height: 1.5;
+    padding-top: 1px;
+    word-break: break-word;
+  }
+
+  .item-text.done {
+    color: var(--done);
+    text-decoration: line-through;
+    text-decoration-color: var(--stamp-red-soft);
+    text-decoration-thickness: 1.5px;
+  }
+
+  .remove-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 4px 6px;
+    opacity: 0;
+    transition: opacity 0.15s ease, color 0.15s ease;
+  }
+
+  li.item:hover .remove-btn { opacity: 1; }
+  .remove-btn:hover { color: var(--stamp-red); }
+
+  .empty-state {
+    padding: 40px 0;
+    text-align: center;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-size: 15px;
+  }
+
+  .empty-state .glyph {
+    display: block;
+    font-size: 22px;
+    margin-bottom: 10px;
+    font-style: normal;
+  }
+
+  @media (max-width: 480px) {
+    .letterhead h1 { font-size: 26px; }
+    .item-text { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const TODAY = new Date().toLocaleDateString('en-US', {
+  weekday: 'long', month: 'long', day: 'numeric'
+});
+
+function Checkbox({ checked, onToggle }) {
+  return (
+    <button
+      className={"checkbox" + (checked ? " checked" : "")}
+      onClick={onToggle}
+      aria-pressed={checked}
+      aria-label={checked ? "Mark as not done" : "Mark as done"}
+    >
+      <svg viewBox="0 0 24 24">
+        <polyline points="4 12 10 18 20 6" />
+      </svg>
+    </button>
+  );
+}
+
+function TodoItem({ task, onToggle, onDelete }) {
+  return (
+    <li className="item">
+      <Checkbox checked={task.done} onToggle={() => onToggle(task.id)} />
+      <span className={"item-text" + (task.done ? " done" : "")}>{task.text}</span>
+      <button className="remove-btn" onClick={() => onDelete(task.id)}>Remove</button>
+    </li>
+  );
+}
+
+function App() {
+  const [tasks, setTasks] = useState([]);
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef(null);
+
+  useEffect(() => { inputRef.current && inputRef.current.focus(); }, []);
+
+  const addTask = (e) => {
+    e.preventDefault();
+    const text = draft.trim();
+    if (!text) return;
+    setTasks(prev => [...prev, { id: Date.now(), text, done: false }]);
+    setDraft("");
+  };
+
+  const toggleTask = (id) => {
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
+  };
+
+  const deleteTask = (id) => {
+    setTasks(prev => prev.filter(t => t.id !== id));
+  };
+
+  const doneCount = tasks.filter(t => t.done).length;
+
+  return (
+    <div className="sheet">
+      <div className="letterhead">
+        <h1>Field Notes</h1>
+        <span className="date">{TODAY}</span>
+      </div>
+
+      <div className="tally">
+        {tasks.length === 0
+          ? "no entries yet"
+          : <>
+              <strong>{doneCount}</strong> of <strong>{tasks.length}</strong> crossed off
+            </>
+        }
+      </div>
+
+      <form className="add-row" onSubmit={addTask}>
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder="Write something down…"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+        />
+        <button type="submit" disabled={!draft.trim()}>Add</button>
+      </form>
+
+      {tasks.length === 0 ? (
+        <div className="empty-state">
+          <span className="glyph">✎</span>
+          The page is blank. Add your first task above.
+        </div>
+      ) : (
+        <ul className="list">
+          {tasks.map(task => (
+            <TodoItem key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} />
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
